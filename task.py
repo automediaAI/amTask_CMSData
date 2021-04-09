@@ -35,10 +35,11 @@ def uploadData(inputDictList, recToUpdate):
 
 #Goes through all records and updates ones that are in the master dict
 def updateLoop():
-	allRecords_covid = airtable.get_all(view='Service - amData')
-	allRecords_news = airtable_producer.get_all(view='Service - amDataNews')
-	allRecords_images = airtable_producer.get_all(view='Service - amImagePuller')
-	allRecords = allRecords_news + allRecords_images + allRecords_covid
+	allRecords = airtable_producer.get_all(view='nipun_test') #to test
+	# allRecords_covid = airtable.get_all(view='Service - amData')
+	# allRecords_news = airtable_producer.get_all(view='Service - amDataNews')
+	# allRecords_images = airtable_producer.get_all(view='Service - amImagePuller')
+	# allRecords = allRecords_news + allRecords_images + allRecords_covid
 	# allRecords = airtable_producer.get_all()
 	for i in allRecords:
 		try: #In case have a prod payload or anything wrong 
@@ -50,18 +51,21 @@ def updateLoop():
 				type_asked = payload_json["type"] #Single data, or table of data 
 				service_output = i["fields"]["service_output"][0] #Main dict to be shared with all
 
+				print ('service: ', payload_service)
 				if payload_service == "am_newspuller":
 					news_output = service_output #Since output is news 
 					news_output_json = ast.literal_eval(news_output) #since List from airtable is in String
 					data_toUpload = getNewsData(news_output_json, payload_json)
 					uploadData(data_toUpload, rec_ofAsked) #Just that bit updated 
-					print ("Row upload to CMS done..")
+					print ("News upload to CMS done..")
 
 				elif payload_service == "am_CovidData":
+					print ('Entered into covid data')
 					data_output = service_output #Since output is news 
 					data_toUpload = getCovidData(data_output, payload_json)
+					print ('Data to upload: ', data_toUpload)
 					uploadData(data_toUpload, rec_ofAsked) #Just that bit updated 
-					print ("Row upload to CMS done..") 
+					print ("Data upload to CMS done..") 
 
 		except Exception: 
 			pass

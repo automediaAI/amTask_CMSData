@@ -17,9 +17,17 @@ import ast #to covert string to list
 ### EXTRACTION using Pandas - Add more to get more out of data
 #Return data by region 
 def getSingleByRegion(allData, regionToGet, areaTable):
-	for i in allData:
-		if (i['region'] == regionToGet) and (i['areaTable'] == areaTable):
+	
+	print ("Entered SINGLE region --> ")
+	print ("All data type BEFORE --", type(allData))
+	allData_json = json.loads(allData)
+	print ("All data type AFTER --", type(allData_json))
+
+	for i in allData_json:
+		print ("Region being checked", i['region'])
+		if (i['region'].lower().strip() == regionToGet.lower().strip()) and (i['areaTable'].lower().strip() == areaTable.lower().strip()):
 			return i 
+			print ("value of single: ", i)
 	return [] #adding to return blank in case region not found, as error check
 
 # Get Top x by Use case
@@ -141,26 +149,34 @@ def getNewsData(inputNews, inputDataFormat):
 #### COVID DATA 
 # Gives back correct news data based on ask ie how many, and what format
 def getCovidData(inputMasterDict, payload_json):
+	type_asked = payload_json["type"] #Single data, or table of data
+	data_asked = inputDataFormat["data_needed"] #format of data asked
+	# series_workedon = i["fields"]["Series"] #to use for debug to check where failing ie Row of record
 
-	if "Prod_Ready" in i["fields"]: #Only working on prod ready ie checkboxed
-			type_asked = payload_json["type"] #Single data, or table of data 
-			series_workedon = i["fields"]["Series"] #to use for debug to check where failing
+	#Different functions if List or Single data asked for
+	if type_asked == "dataSingle":
+		region_asked = payload_json["region"] #USA, World etc
+		title_asked = payload_json["title"] #Cases, deaths etc
+		areaTable = payload_json["areaTable"] #All Countries data, or US State data
+		print ("Region asked", region_asked)
+		data_asked = getSingleByRegion(inputMasterDict, region_asked, areaTable) #Entire dict is sent
+		return data_asked
+		print ('Single output', data_asked)
 
-			#Different functions if List or Single data asked for
-			if type_asked == "dataSingle":
-				region_asked = payload_json["region"] #USA, World etc
-				title_asked = payload_json["title"] #Cases, deaths etc
-				areaTable = payload_json["areaTable"] #All Countries data, or US State data
-				data_asked = getSingleByRegion(inputMasterDict, region_asked, areaTable) #Entire dict is sent
-				return data_asked
+	elif type_asked == "dataTable":
+		filterBy = payload_json["areaTable"] #So only that data goes
+		sortBy = payload_json["sortBy"] #Top by Cases, Deaths etc
+		listHowMany = int(payload_json["listHowMany"]) #Give back how many records
+		data_asked = topListByTitle(inputMasterDict, sortBy, filterBy, listHowMany)
+		return data_asked
+		print ('Table output', data_asked)
 
-			elif type_asked == "dataTable":
-				filterBy = payload_json["areaTable"] #So only that data goes
-				sortBy = payload_json["sortBy"] #Top by Cases, Deaths etc
-				listHowMany = int(payload_json["listHowMany"]) #Give back how many records
-				data_asked = topListByTitle(inputMasterDict, sortBy, filterBy, listHowMany)
-				return data_asked
+	else:
+		fields = {'data_output': "ERROR - Type incorrect"}
+		return data_asked
+		print ('Error output', data_asked)
 
-			else:
-				fields = {'data_output': "ERROR - Type incorrect"}
-				return data_asked
+
+
+
+
