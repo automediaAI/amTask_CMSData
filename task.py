@@ -54,13 +54,16 @@ def updateLoop():
 				print ('service: ', payload_service)
 				if payload_service == "am_newspuller":
 					news_output = service_output #Since output is news 
+					# print ('type:', type(news_output))
 					news_output_json = ast.literal_eval(news_output) #since List from airtable is in String
+					# print ('type:', type(news_output_json))
 					data_toUpload = getNewsData(news_output_json, payload_json)
+					# print ('data to upload: ', data_toUpload)
 					uploadData(data_toUpload, rec_ofAsked) #Just that bit updated 
 					print ("News upload to CMS done..")
 
 				elif payload_service == "am_CovidData":
-					print ('Entered into covid data')
+					# print ('Entered into covid data')
 					data_output = service_output #Since output is news 
 					data_toUpload = getCovidData(data_output, payload_json)
 					print ('Data to upload: ', data_toUpload)

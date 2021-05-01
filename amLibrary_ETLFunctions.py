@@ -104,7 +104,6 @@ def dataTableParse(payloadToCheck, dataListToFillFrom):
 def getNewsData(inputNews, inputDataFormat):
 	type_asked = inputDataFormat["type"] #dataTable or dataSingle
 	data_asked = inputDataFormat["data_needed"] #format of data asked
-	
 	#Different functions if List or Single data asked for
 	if type_asked == 'dataSingle': #In case only 1 item asked for or available 
 		tempDict = {} #since this will return a single dict
@@ -112,12 +111,13 @@ def getNewsData(inputNews, inputDataFormat):
 		if recID_asked > len(inputNews):
 			return {"error":"🚫 Record asked not in dict"}
 		else:
+			news_index = 0
 			for i in inputNews:
-				if (str(index(i)) == str(recID_asked)): #Only returning that recID
-				# if (str(i['recID']) == str(recID_asked)): #Only returning that recID
+				if (str(news_index) == str(recID_asked)): #Only returning that recID
 					for key, value in data_asked.items(): #To map it
 						if value in i.keys(): 
 							tempDict[key] = i[value]
+				news_index+=1
 			return tempDict
 	
 	elif type_asked == 'dataTable': #In case of newsTable
@@ -150,11 +150,14 @@ def getNewsData(inputNews, inputDataFormat):
 # Gives back correct news data based on ask ie how many, and what format
 def getCovidData(inputMasterDict, payload_json):
 	type_asked = payload_json["type"] #Single data, or table of data
+	print ('type asked: ',type_asked)
+	# print ('type asked: ', type(type_asked))
 	data_asked = inputDataFormat["data_needed"] #format of data asked
 	# series_workedon = i["fields"]["Series"] #to use for debug to check where failing ie Row of record
 
 	#Different functions if List or Single data asked for
-	if type_asked == "dataSingle":
+	if type_asked.strip() == "dataSingle":
+		print ('........entered single..........')
 		region_asked = payload_json["region"] #USA, World etc
 		title_asked = payload_json["title"] #Cases, deaths etc
 		areaTable = payload_json["areaTable"] #All Countries data, or US State data
@@ -164,6 +167,7 @@ def getCovidData(inputMasterDict, payload_json):
 		print ('Single output', data_asked)
 
 	elif type_asked == "dataTable":
+		print ('entered table')
 		filterBy = payload_json["areaTable"] #So only that data goes
 		sortBy = payload_json["sortBy"] #Top by Cases, Deaths etc
 		listHowMany = int(payload_json["listHowMany"]) #Give back how many records
