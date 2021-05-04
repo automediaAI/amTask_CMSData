@@ -20,7 +20,8 @@ def getSingleByRegion(allData, regionToGet, areaTable):
 	
 	print ("Entered SINGLE region --> ")
 	print ("All data type BEFORE --", type(allData))
-	allData_json = json.loads(allData)
+	# allData_json = json.loads(allData)
+	allData_json = allData
 	print ("All data type AFTER --", type(allData_json))
 
 	for i in allData_json:
@@ -152,7 +153,7 @@ def getCovidData(inputMasterDict, payload_json):
 	type_asked = payload_json["type"] #Single data, or table of data
 	print ('type asked: ',type_asked)
 	# print ('type asked: ', type(type_asked))
-	data_asked = inputDataFormat["data_needed"] #format of data asked
+	data_asked = payload_json["data_needed"] #format of data asked
 	# series_workedon = i["fields"]["Series"] #to use for debug to check where failing ie Row of record
 
 	#Different functions if List or Single data asked for
@@ -163,8 +164,8 @@ def getCovidData(inputMasterDict, payload_json):
 		areaTable = payload_json["areaTable"] #All Countries data, or US State data
 		print ("Region asked", region_asked)
 		data_asked = getSingleByRegion(inputMasterDict, region_asked, areaTable) #Entire dict is sent
-		return data_asked
 		print ('Single output', data_asked)
+		return data_asked
 
 	elif type_asked == "dataTable":
 		print ('entered table')
@@ -172,13 +173,13 @@ def getCovidData(inputMasterDict, payload_json):
 		sortBy = payload_json["sortBy"] #Top by Cases, Deaths etc
 		listHowMany = int(payload_json["listHowMany"]) #Give back how many records
 		data_asked = topListByTitle(inputMasterDict, sortBy, filterBy, listHowMany)
-		return data_asked
 		print ('Table output', data_asked)
+		return data_asked
 
 	else:
 		fields = {'data_output': "ERROR - Type incorrect"}
-		return data_asked
 		print ('Error output', data_asked)
+		return data_asked
 
 
 

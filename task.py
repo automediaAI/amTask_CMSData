@@ -9,6 +9,7 @@
 
 ## Declarations 
 import os
+import ast
 from airtable import Airtable
 import json
 import ast #to covert string to list 
@@ -64,14 +65,14 @@ def updateLoop():
 
 				elif payload_service == "am_CovidData":
 					# print ('Entered into covid data')
-					data_output = service_output #Since output is news 
+					data_output = ast.literal_eval(service_output) #Since output is news 
 					data_toUpload = getCovidData(data_output, payload_json)
 					print ('Data to upload: ', data_toUpload)
 					uploadData(data_toUpload, rec_ofAsked) #Just that bit updated 
 					print ("Data upload to CMS done..") 
 
-		except Exception: 
-			pass
+		except Exception as e:
+			print(e)
 	print ("Upload to CMS done")
 
 updateLoop()
