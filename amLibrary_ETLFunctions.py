@@ -17,18 +17,12 @@ import ast #to covert string to list
 ### EXTRACTION using Pandas - Add more to get more out of data
 #Return data by region 
 def getSingleByRegion(allData, regionToGet, areaTable):
-	
-	print ("Entered SINGLE region --> ")
-	print ("All data type BEFORE --", type(allData))
 	# allData_json = json.loads(allData)
 	allData_json = allData
-	print ("All data type AFTER --", type(allData_json))
-
 	for i in allData_json:
-		print ("Region being checked", i['region'])
+		# print ("Region being checked", i['region'])
 		if (i['region'].lower().strip() == regionToGet.lower().strip()) and (i['areaTable'].lower().strip() == areaTable.lower().strip()):
 			return i 
-			print ("value of single: ", i)
 	return [] #adding to return blank in case region not found, as error check
 
 # Get Top x by Use case
@@ -85,6 +79,7 @@ def dataTableParse(payloadToCheck, dataListToFillFrom):
 	dataList = []
 	keyTemp = 0
 	for dataToFillFrom in dataListToFillFrom: 
+		# print ("List item:", dataToFillFrom)
 		tempDict = {}		
 		for key, value in payloadToCheck['data_needed'].items():
 			if value in dataToFillFrom: 
@@ -151,30 +146,25 @@ def getNewsData(inputNews, inputDataFormat):
 # Gives back correct news data based on ask ie how many, and what format
 def getCovidData(inputMasterDict, payload_json):
 	type_asked = payload_json["type"] #Single data, or table of data
-	print ('type asked: ',type_asked)
-	# print ('type asked: ', type(type_asked))
 	data_asked = payload_json["data_needed"] #format of data asked
 	# series_workedon = i["fields"]["Series"] #to use for debug to check where failing ie Row of record
 
 	#Different functions if List or Single data asked for
 	if type_asked.strip() == "dataSingle":
-		print ('........entered single..........')
 		region_asked = payload_json["region"] #USA, World etc
 		title_asked = payload_json["title"] #Cases, deaths etc
 		areaTable = payload_json["areaTable"] #All Countries data, or US State data
-		print ("Region asked", region_asked)
 		data_asked = getSingleByRegion(inputMasterDict, region_asked, areaTable) #Entire dict is sent
-		print ('Single output', data_asked)
-		return data_asked
+		data_toUpload = dataSingleParse(payload_json, data_asked) #Limited data based on payload ask
+		return data_toUpload
 
 	elif type_asked == "dataTable":
-		print ('entered table')
 		filterBy = payload_json["areaTable"] #So only that data goes
 		sortBy = payload_json["sortBy"] #Top by Cases, Deaths etc
 		listHowMany = int(payload_json["listHowMany"]) #Give back how many records
 		data_asked = topListByTitle(inputMasterDict, sortBy, filterBy, listHowMany)
-		print ('Table output', data_asked)
-		return data_asked
+		data_toUpload = dataTableParse(payload_json, data_asked)
+		return data_toUpload
 
 	else:
 		fields = {'data_output': "ERROR - Type incorrect"}
@@ -182,6 +172,53 @@ def getCovidData(inputMasterDict, payload_json):
 		return data_asked
 
 
+#### JASP DATA 
+# Gives back the URL and source of a single image, or list based on whats asked 
+## We are only using single in JASP so far, but same can be used for multiple images carousel in future
+
+def getImageData(inputImageList, inputDataFormat):
+	type_asked = inputDataFormat["type"] #dataTable or dataSingle
+	data_asked = inputDataFormat["data_needed"] #format of data asked
+	#Different functions if List or Single data asked for
+	if type_asked == 'dataSingle': #In case only 1 item asked for or available 
+		tempDict = {} #since this will return a single dict
+		recID_asked = inputDataFormat["recID_needed"] #which rec needed, only used if dataSingle
+		if recID_asked > len(inputImageList):
+			return {"error":"🚫 Record asked not in dict"}
+		else:
+			item_index = 0
+			for i in inputImageList:
+				if (str(item_index) == str(recID_asked)): #Only returning that recID
+					for key, value in data_asked.items(): #To map it
+						if value in i.keys(): 
+							tempDict[key] = i[value]
+				item_index+=1
+			return tempDict
+	
+	elif type_asked == 'dataTable': #In case of newsTable
+		count_asked = inputDataFormat["count_needed"] #how many needed, only used if dataTable
+		range_to_check = count_asked if (count_asked <= len(inputImageList)) else len(inputImageList)
+		outputDict = {
+				"table_info": {
+					"type":"dataTable",
+				},
+				"rows" : []
+			}
+		outputList = []		
+		for rec in range(range_to_check): 
+			tempDict = {}
+			tempDict['recID'] = rec #to give it a sequence
+			dataIn = inputImageList[rec] #already a dict
+			
+			for key, value in data_asked.items():
+				if value in dataIn: 
+					tempDict[key] = dataIn[value] 
+			outputList.append(tempDict)
+		outputDict["rows"] = outputList
+		return outputDict
+	
+	else:
+		return {"error":"🚫Data input incorrect"}
 
 
 

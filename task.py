@@ -13,7 +13,7 @@ import ast
 from airtable import Airtable
 import json
 import ast #to covert string to list 
-from amLibrary_ETLFunctions import getCovidData, getNewsData
+from amLibrary_ETLFunctions import getCovidData, getNewsData, getImageData
 
 # Airtable settings 
 base_key = os.environ.get("PRIVATE_BASE_KEY")
@@ -51,25 +51,26 @@ def updateLoop():
 				payload_json = json.loads(payload_native)
 				type_asked = payload_json["type"] #Single data, or table of data 
 				service_output = i["fields"]["service_output"][0] #Main dict to be shared with all
-
-				print ('service: ', payload_service)
 				if payload_service == "am_newspuller":
 					news_output = service_output #Since output is news 
-					# print ('type:', type(news_output))
 					news_output_json = ast.literal_eval(news_output) #since List from airtable is in String
-					# print ('type:', type(news_output_json))
 					data_toUpload = getNewsData(news_output_json, payload_json)
-					# print ('data to upload: ', data_toUpload)
 					uploadData(data_toUpload, rec_ofAsked) #Just that bit updated 
 					print ("News upload to CMS done..")
 
 				elif payload_service == "am_CovidData":
-					# print ('Entered into covid data')
 					data_output = ast.literal_eval(service_output) #Since output is news 
 					data_toUpload = getCovidData(data_output, payload_json)
-					print ('Data to upload: ', data_toUpload)
 					uploadData(data_toUpload, rec_ofAsked) #Just that bit updated 
 					print ("Data upload to CMS done..") 
+
+				elif payload_service == "am_jasp":
+					# print ('Entered into JASP data')
+					data_output = ast.literal_eval(service_output) #Since output is news 
+					data_toUpload = getImageData(data_output, payload_json)
+					# print ('Data to upload: ', data_toUpload)
+					uploadData(data_toUpload, rec_ofAsked) #Just that bit updated 
+					print ("Image upload to CMS done..") 
 
 		except Exception as e:
 			print(e)
