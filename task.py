@@ -36,12 +36,12 @@ def uploadData(inputDictList, recToUpdate):
 
 #Goes through all records and updates ones that are in the master dict
 def updateLoop():
-	allRecords = airtable_producer.get_all(view='nipun_test') #to test
+	# allRecords = airtable_producer.get_all(view='nipun_test') #to test
 	# allRecords_covid = airtable.get_all(view='Service - amData')
 	# allRecords_news = airtable_producer.get_all(view='Service - amDataNews')
 	# allRecords_images = airtable_producer.get_all(view='Service - amImagePuller')
 	# allRecords = allRecords_news + allRecords_images + allRecords_covid
-	# allRecords = airtable_producer.get_all()
+	allRecords = airtable_producer.get_all()
 	for i in allRecords:
 		try: #In case have a prod payload or anything wrong 
 			if "Prod_Ready" in i["fields"]: #Only working on prod ready ie checkboxed
